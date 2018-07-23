@@ -1,9 +1,9 @@
-<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed'); 
-
+<?php 
 
 class Nog{
     
     public static $ON = true;
+    public static $path = "nog/";
     
     public static $file;
   
@@ -21,7 +21,7 @@ class Nog{
      * This is the constructor / init function
      * Pass in a string to ba used in the file name 
      * 
-     * Also, change $save_path to alter the dir the files
+     * Also, change self::$path to alter the dir the files
      * are stored in.  The current dir makes use of 
      * a Codeigniter constant. 
      * 
@@ -36,18 +36,16 @@ class Nog{
     public static function init($name = 'nog'){
         if(!self::$ON){return;}
 
-        $save_path = APPPATH.'../nog';
-        
         if(is_array($name)){
             $name = $name[0];
         }
 
-        if(!file_exists ($save_path)){
-            mkdir($save_path);
+        if(!file_exists (self::$path)){
+            mkdir(self::$path);
         }
 
         $filename = $name .'__'. date('Y_m_d__G_i_s').'.html';
-        self::$file = fopen($save_path.'/'.$filename, 'a');
+        self::$file = fopen(self::$path.'/'.$filename, 'a');
         
         $date = date('g:i:sA F j, Y');
         
@@ -61,7 +59,7 @@ class Nog{
 	"if((item[i].style.display == 'none' && op == 't')|| op == 's')".
         "{ item[i].style.display = 'block'; }".
 	"else { item[i].style.display = 'none';}}}</script>".PHP_EOL);
-        
+    
         fwrite(self::$file, "<style type='text/css'>".PHP_EOL);
          
         fwrite(self::$file, "body{font-family: arial;}".PHP_EOL);
@@ -81,17 +79,17 @@ class Nog{
         fwrite(self::$file, ".obj{margin: 1px; background: white; vertical-align:middle; display:inline-block; padding: 2px; border: dashed 1px black}".PHP_EOL);
         
         fwrite(self::$file, ".bg00{background:#eee;}".PHP_EOL.".bg01{background:#bbb;}".PHP_EOL.".bg10{background:#fee;}".PHP_EOL.".bg11{background:#fbb;}".PHP_EOL.".bg20{background:#efe;}".PHP_EOL.".bg21{background:#bfb;}".PHP_EOL.".bg30{background:#eef;}".PHP_EOL.".bg31{background:#bbf;}".PHP_EOL.".bg40{background:#ffe;}".PHP_EOL.".bg41{background:#ffb;}".PHP_EOL.".bg50{background:#eff;}".PHP_EOL.".bg51{background:#bff;}".PHP_EOL.".bg60{background:#fef;}".PHP_EOL.".bg61{background:#fbf;}".PHP_EOL);
-        
+       
         fwrite(self::$file, ".time{position:absolute; bottom: 0px; right: 5px; color:#0a0; text-aligh:right}".PHP_EOL);
         
         fwrite(self::$file, "pre{white-space: pre-wrap; white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap; word-wrap: break-word; }".PHP_EOL);
-        
+       
         fwrite(self::$file, "</style></head><body>".PHP_EOL);
                 
         fwrite(self::$file, "<button onclick=\"tog('att', 'h')\">Hide Arguments</button><button onclick=\"tog('att', 's')\">Show Arguments</button><button onclick=\"tog('list', 'h')\">Hide List</button><button onclick=\"tog('list', 's')\">Show List</button>");
-                
-        fwrite(self::$file, "<h1>Elog Report - $name - $date</h1>".PHP_EOL."<h3>Filename: $filename</h3>".PHP_EOL."<h3>URL: ".current_url()."</h3>".PHP_EOL);
-        
+             
+        fwrite(self::$file, "<h1>Elog Report - $name - $date</h1>".PHP_EOL."<h3>Filename: $filename</h3>".PHP_EOL."<h3>URL: ".$_SERVER['REQUEST_URI']."</h3>".PHP_EOL);
+             
         self::$time_stack[0] = 0;
         
         self::$last_time = (int)(microtime(true)*1000000);
