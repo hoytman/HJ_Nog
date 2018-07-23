@@ -30,7 +30,6 @@ class Nog{
     public function __construct($name = 'nog'){
         if(!self::$ON){return;}
         self::init($name);
-        
     }
     
     public static function init($name = 'nog'){
@@ -49,7 +48,7 @@ class Nog{
         
         $date = date('g:i:sA F j, Y');
         
-        fwrite(self::$file, "<html><head><title>Elog Report - $name - $date</title>");
+        fwrite(self::$file, "<html><head><title>$name - $date</title>");
 
         fwrite(self::$file, "<script>".
         
@@ -130,7 +129,13 @@ class Nog{
         $function = $time[1]['function'];
         $arguments = $time[1]['args'];
         
-        $name = "$Class :: $function()";
+        if($Class == "..."){
+            $name = $function."()";
+        }else{
+            $name = "$Class$function()";
+        }
+        
+        
         
         self::$name_stack[self::$current_level] = $name;
         
@@ -204,7 +209,7 @@ class Nog{
         if(substr($output, -2, 1) != ':'){
 
             $output .= "<div class='time'>".PHP_EOL;
-            $output .= "E:{$elapsed_time}ms T:{$total_time}ms".PHP_EOL;
+            $output .= "time+{$elapsed_time}ms={$total_time}ms".PHP_EOL;
             $output .= "</div>".PHP_EOL;
             $output .= "</li>".PHP_EOL;
             $output .= "<li>".PHP_EOL;
@@ -240,7 +245,7 @@ class Nog{
         
         $output = "END OF FUNCTION: $name";
         $output .= "<div class='time'>".PHP_EOL;
-        $output .= "E:{$elapsed_time}ms T:{$total_time}ms".PHP_EOL;
+        $output .= "time+{$elapsed_time}ms={$total_time}ms".PHP_EOL;
         $output .= "</div>".PHP_EOL;
         $output .= "</li></ul></div>".PHP_EOL;
 
