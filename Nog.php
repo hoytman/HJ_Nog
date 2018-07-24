@@ -52,6 +52,7 @@ class Nog{
     
     public static $index = 0;
     
+    
     /*
      * This is the class constructor.  Though the class is intended to be 
      * referenced as a static class, it can still be instantiated by
@@ -115,10 +116,11 @@ class Nog{
             "var item = document.getElementsByClassName(obj);".PHP_EOL.
             "for(var i=0; i<item.length; i++){".PHP_EOL.
             "if(item[i].classList.contains('selected'))".PHP_EOL.
-
             "{ item[i].classList.remove('selected'); }".PHP_EOL.
             "else { item[i].classList.add('selected');}}}".PHP_EOL.
                 
+                
+
         "</script>".PHP_EOL.
     
         "<style type='text/css'>".PHP_EOL.
@@ -126,7 +128,7 @@ class Nog{
         "body{font-family: arial;}".PHP_EOL.
         
         "button{float: right}".PHP_EOL.
-        
+                
         ".holder{border: solid 1px black; margin:4px; margin-bottom:10px;}".PHP_EOL.
                 
         "div.selected{border: dashed 10px black; padding:35px; margin:15px}".PHP_EOL.
@@ -183,7 +185,11 @@ class Nog{
              
         "<h1>Nog Report - $date</h1>".PHP_EOL.
                 
-        "<h3>My Filename: $filename</h3>".PHP_EOL);
+        "<h3>My Filename: $filename</h3>".PHP_EOL.
+         
+        "<div id='anchors'><div>Goto Anchors:</div></div>".PHP_EOL.
+        
+        "<div id='pulled'></div>");
              
         //Setup the time tracking array
         
@@ -379,6 +385,29 @@ class Nog{
         fwrite(self::$file, $output);
         self::$last_time = (int)(microtime(true)*1000000);
 
+    }
+    
+    public static function A($name){
+        
+        
+        $output = "<a name='$name'></a>".PHP_EOL.
+                
+        "<script>".PHP_EOL.
+               
+        "var txt = document.getElementById('anchors').innerHTML;".PHP_EOL.
+                
+        "document.getElementById('anchors').innerHTML = txt + ".
+                
+            "\"<div><a href='#$name'>$name</a></div>\"".PHP_EOL.
+                
+        "</script>".PHP_EOL.
+                
+        "<h2>Ankor: $name</h2></li><li>";
+        
+       
+        fwrite(self::$file, $output);
+
+        
     }
     
     public static function X(){

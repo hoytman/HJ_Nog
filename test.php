@@ -53,9 +53,9 @@ function call_these_classes(){
 }
 
 call_these_classes();
-
+Nog::A('middle');
 call_these_classes();
-
+Nog::A('Bottom');
 Nog::C();
 
 Echo "Done: ".time();
