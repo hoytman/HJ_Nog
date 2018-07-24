@@ -3,8 +3,6 @@ require_once("Nog.php");
 
 Nog::init("nog","test");
 
-Nog::O(6);
-
 Class myClass{
 
     public function __construct() {
@@ -48,10 +46,14 @@ Class myClass{
 
 function recursive($x){
     Nog::O();
-    Nog::M("pre sleep");
-    sleep(1);
-    Nog::M("sleep");
-    sleep(1);
+    
+    Nog::M("get ready to sleep");
+    
+    $sleep = rand(1,1000);
+    usleep($sleep);
+    Nog::M("sleep:".$sleep);
+    
+
     $x--;
     Nog::M("x=", $x);
     if($x%10 == 0){
@@ -67,7 +69,7 @@ function random_test(){
     Nog::O();
     $x = rand(0,100);
     Nog::M("x=", $x);
-    if($x > 70){
+    if($x > 50){
         random_test();
     }
     $x = rand(0,100);
@@ -75,6 +77,7 @@ function random_test(){
     if($x > 50){
         random_test();
     }
+
     Nog::C();
 }
 
@@ -90,11 +93,14 @@ Nog::A('middle');
 call_these_classes();
 Nog::A('Recursion');
 
-recursive(5);
+recursive(3);
+
 Nog::A('Random');
+
 random_test();
 
 Nog::A('Bottom');
-Nog::C();
+
 Nog::X();
+
 Echo "Done: ".time();

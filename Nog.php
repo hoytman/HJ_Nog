@@ -42,18 +42,17 @@ class Nog{
     public static $ON = true;       //setting this to false shuts off the class
     
     public static $file;            //link to the file whihc is created
-  
-    public static $func_width_by_level = array(0 => 0);
-    public static $current_level = 0;
+
+    public static $current_level = -1;
+    public static $block_count = 0;
+    public static $anchor_count = 0;
     
-    public static $last_time = 0;
+    public static $func_width_by_level = array(0 => 0);
     public static $time_stack = array();
     public static $name_stack = array();
+    public static $function_list = array();
     
-    public static $index = 0;
-    
-    public static $anchors = 0;
-    
+    public static $last_time = 0;
     
     /*
      * This is the class constructor.  Though the class is intended to be 
@@ -149,27 +148,27 @@ class Nog{
         
         ".bg01{background:#bbb;}".PHP_EOL.
                 
-        ".bg10{background:#fee;}".PHP_EOL.
+        ".bg10{background:#fdd;}".PHP_EOL.
              
         ".bg11{background:#fbb;}".PHP_EOL.
                 
-        ".bg20{background:#efe;}".PHP_EOL.
+        ".bg20{background:#dfd;}".PHP_EOL.
                 
         ".bg21{background:#bfb;}".PHP_EOL.
                 
-        ".bg30{background:#eef;}".PHP_EOL.
+        ".bg30{background:#ddf;}".PHP_EOL.
                 
         ".bg31{background:#bbf;}".PHP_EOL.
                 
-        ".bg40{background:#ffe;}".PHP_EOL.
+        ".bg40{background:#ffd;}".PHP_EOL.
                 
         ".bg41{background:#ffb;}".PHP_EOL.
                 
-        ".bg50{background:#eff;}".PHP_EOL.
+        ".bg50{background:#dff;}".PHP_EOL.
                 
         ".bg51{background:#bff;}".PHP_EOL.
                 
-        ".bg60{background:#fef;}".PHP_EOL.
+        ".bg60{background:#fdf;}".PHP_EOL.
                 
         ".bg61{background:#fbf;}".PHP_EOL.
        
@@ -198,6 +197,9 @@ class Nog{
         self::$time_stack[0] = 0;
         
         self::$last_time = (int)(microtime(true)*1000000);
+        
+        self::O();
+        
     }
     
     /*
@@ -213,19 +215,20 @@ class Nog{
         //Exit if the class is disabled
         if(!self::$ON){return;}
        
-
+        self::$block_count += 1;
+        self::$current_level += 1;
+        
+        self::$time_stack[self::$current_level] = 0;
         
         //Track the bg color of the current function level
         self::$func_width_by_level[self::$current_level] += 1;
+        
         $num_b = self::$func_width_by_level[self::$current_level] % 2;
 
-        self::$current_level += 1;        
-        self::$func_width_by_level[self::$current_level] = 0;
         $num_a = self::$current_level % 6;
         
         //Setup the time tracking array for this function level
-        self::$time_stack[self::$current_level] = 0;
-        
+
         $css_bg_class = 'bg'.$num_a.$num_b;
         
         //Get function and class information
@@ -258,11 +261,23 @@ class Nog{
         $name = "$Class$function";
         $note = "<div style='float:right'>$file$line</div>";
     
+        if(isset(self::$function_list[$name])){
+            self::$function_list[$name]++;
+        }else{
+            self::$function_list[$name] = 1;
+        }
+        
+        $name .= ' #'.self::$function_list[$name];
+        
         //Track function name for function closure
         self::$name_stack[self::$current_level] = $name;
         
+
+        
+        
+        
         //Build Log file HTML
-        $i = self::$index;
+        $i = self::$block_count;
         
         $output = "";
 
@@ -281,8 +296,10 @@ class Nog{
         $output .= "<ul class='l$i list'>".PHP_EOL;
         $output .= "<li>".PHP_EOL;
         
-        self::$index += 1;
+
+        
         fwrite(self::$file, $output);
+        
         self::$last_time = (int)(microtime(true)*1000000);
 
     }
@@ -374,26 +391,50 @@ class Nog{
         $total_time = self::$time_stack[self::$current_level];
         $name = self::$name_stack[self::$current_level];
         
+
+        
+        //Build Log file HTML
+        $output = "END OF FUNCTION: $name";
+        
+        $output .= "<div class='time'>".PHP_EOL;
+        $output .= "time+{$elapsed_time}&#181;s={$total_time}&#181;s".PHP_EOL;
+        $output .= "</div>".PHP_EOL;
+
+        $output .= "</li></ul></div>".PHP_EOL;
+
+
         self::$current_level -= 1;
+        
+        if(self::$current_level < 0){
+            fwrite(self::$file, $output);
+            return;
+        }
+        
+        
+
         
         //Add elapsed time to the total time of the previous function
         self::$time_stack[self::$current_level] += $total_time;
         
-        //Build Log file HTML
-        $output = "END OF FUNCTION: $name";
+        $parent_name = self::$name_stack[self::$current_level];
+        $parent_total_time =  self::$time_stack[self::$current_level];
+        
+        $output .= " resume: $parent_name";
         $output .= "<div class='time'>".PHP_EOL;
-        $output .= "time+{$elapsed_time}&#181;s={$total_time}&#181;s".PHP_EOL;
+        $output .= "time+{$total_time}&#181;s={$parent_total_time}&#181;s".PHP_EOL;
         $output .= "</div>".PHP_EOL;
-        $output .= "</li></ul></div>".PHP_EOL;
-
+        $output .= "</li>".PHP_EOL;
+        $output .= "<li>".PHP_EOL;
+        
         fwrite(self::$file, $output);
+        
         self::$last_time = (int)(microtime(true)*1000000);
 
     }
     
     public static function A($name){
         
-        $num = self::$anchors;
+        $num = self::$anchor_count;
         
         $output = 
                 
@@ -414,12 +455,13 @@ class Nog{
        
         fwrite(self::$file, $output);
 
-        self::$anchors++;
+        self::$anchor_count++;
         
     }
     
     public static function X(){
-        fwrite(self::$file, "</body></html>");
+        self::C();
+        fwrite(self::$file, "The End</body></html>");
     }
 
 }
