@@ -47,7 +47,7 @@ class Nog{
     public static $block_count = 0;
     public static $anchor_count = 0;
     
-    public static $func_width_by_level = array(0 => 0);
+    public static $alternate_color = array(0 => 0);
     public static $time_stack = array();
     public static $name_stack = array();
     public static $function_list = array();
@@ -242,13 +242,14 @@ class Nog{
         self::$time_stack[$level] = 0;
         
         //Track the bg color of the current function level
-        if(isset(self::$func_width_by_level[$level])){
-            self::$func_width_by_level[$level] += 1;
+        if(isset(self::$alternate_color[$level]) && 
+                self::$alternate_color[$level]){
+            self::$alternate_color[$level] = 0;
         }else{
-            self::$func_width_by_level[$level] = 1;
+            self::$alternate_color[$level] = 1;
         }
         
-        $num_b = self::$func_width_by_level[$level] % 2;
+        $num_b = self::$alternate_color[$level];
 
         $num_a = $level % 6;
         
