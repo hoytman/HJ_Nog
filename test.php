@@ -93,7 +93,7 @@ Nog::A('middle');
 call_these_classes();
 Nog::A('Recursion');
 
-recursive(3);
+recursive(100);
 
 Nog::A('Random');
 

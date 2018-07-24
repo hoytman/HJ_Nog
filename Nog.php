@@ -65,11 +65,13 @@ class Nog{
         
         //Exit if the class is disabled
         if(!self::$ON){return;}
-        self::init($name);
+        self::init($path, $name);
         
     }
     
     public static function init($path='nog', $name = 'nog'){
+        
+       
         
         //Exit if the class is disabled
         if(!self::$ON){return;}
@@ -120,7 +122,22 @@ class Nog{
             "{ item[i].classList.remove('selected'); }".PHP_EOL.
             "else { item[i].classList.add('selected');}}}".PHP_EOL.
                 
+             "function lev(num) {".PHP_EOL. 
+                "for(var j=0; j<=num; j++){".PHP_EOL.
+                    "var item = document.getElementsByClassName('level'+j);".PHP_EOL.
+                    "for(var i=0; i<item.length; i++){".PHP_EOL.
+                    "item[i].classList.add('reduced');".PHP_EOL.
                 
+                
+                "}}}".PHP_EOL.
+                
+              "function unlev() {".PHP_EOL. 
+                "var item = document.getElementsByClassName('reduced');".PHP_EOL.
+                "for(var i=0; i<item.length; i++){".PHP_EOL.
+                "item[i].classList.remove('reduced');".PHP_EOL.
+                
+                
+              "}}".PHP_EOL.  
 
         "</script>".PHP_EOL.
     
@@ -128,9 +145,9 @@ class Nog{
          
         "body{font-family: arial;}".PHP_EOL.
         
-        "button{float: right}".PHP_EOL.
+        "button{float: right; }".PHP_EOL.
                 
-        ".holder{border: solid 1px black; margin:4px; margin-bottom:10px; margin-right:0px; min-width:960px}".PHP_EOL.
+        ".holder{ border: solid 1px black; margin:4px; margin-bottom:10px; border-right: solid 0px black; margin-right:0px;}".PHP_EOL.
                 
         "div.selected{border: dashed 10px black; padding:35px; margin:15px}".PHP_EOL.
         
@@ -138,9 +155,11 @@ class Nog{
 
         ".att{margin: 10px; margin-top: 0px; background: black; color:white; padding: 2px;}".PHP_EOL.
         
-        "ul{overflow:hidden; margin: 0px; padding: 2px;}".PHP_EOL.
+        "ul{overflow:hidden; margin: 0px; padding: 0px;}".PHP_EOL.
         
         "li{border-top: solid 1px black; position:relative}".PHP_EOL.
+                
+        ".reduced{border-left: solid 0px black;  padding-left:0px; margin-left:0px;}".PHP_EOL.
         
         ".obj{margin: 1px; background: white; vertical-align:middle; display:inline-block; padding: 2px; border: dashed 1px black}".PHP_EOL.
         
@@ -182,7 +201,7 @@ class Nog{
                 
         "<body>".PHP_EOL.
                 
-        "<button onclick=\"tog('att', 'h')\">Hide Arguments</button><button onclick=\"tog('att', 's')\">Show Arguments</button><button onclick=\"tog('list', 'h')\">Hide Children</button><button onclick=\"tog('list', 's')\">Show Children</button>".
+        "<button onclick=\"tog('att', 'h')\">Hide All Arguments</button><button onclick=\"tog('att', 's')\">Show All Arguments</button><button onclick=\"unlev()\">UnLevel All</button><button onclick=\"tog('list', 's')\">UnMinimize All</button>".
              
         "<h1>Nog Report - $date</h1>".PHP_EOL.
                 
@@ -218,14 +237,20 @@ class Nog{
         self::$block_count += 1;
         self::$current_level += 1;
         
-        self::$time_stack[self::$current_level] = 0;
+        $level = self::$current_level;
+        
+        self::$time_stack[$level] = 0;
         
         //Track the bg color of the current function level
-        self::$func_width_by_level[self::$current_level] += 1;
+        if(isset(self::$func_width_by_level[$level])){
+            self::$func_width_by_level[$level] += 1;
+        }else{
+            self::$func_width_by_level[$level] = 1;
+        }
         
-        $num_b = self::$func_width_by_level[self::$current_level] % 2;
+        $num_b = self::$func_width_by_level[$level] % 2;
 
-        $num_a = self::$current_level % 6;
+        $num_a = $level % 6;
         
         //Setup the time tracking array for this function level
 
@@ -270,31 +295,33 @@ class Nog{
         $name .= ' #'.self::$function_list[$name];
         
         //Track function name for function closure
-        self::$name_stack[self::$current_level] = $name;
-        
-
-        
-        
+        self::$name_stack[$level] = $name;
         
         //Build Log file HTML
         $i = self::$block_count;
         
         $output = "";
 
-        $output .= "<div class='holder $css_bg_class h$i'>".PHP_EOL;
-        
-        $output .= "<button onclick=\"tog('l$i', 't')\">Children</button>";
+        $output .= "<div class='holder $css_bg_class h$i level$level'>".PHP_EOL;
+                $output .= "<button onclick=\"tog('l$i', 't')\">Minimize</button>";
                 
         $output .= "<button onclick=\"tog('p$i', 't')\">Arguments</button>";
         
         $output .= "<button onclick=\"sel('h$i')\">Highlight</button>";
         
-        $output .= "<h3 class='title'> $name$note</h3>".PHP_EOL;
+        $output .= "<button onclick=\"lev($level)\">Level</button>";
 
+        $output .= "<h3 class='title'> $name$note</h3>".PHP_EOL;
+        
+
+        
         $output .= "<pre class='att p$i'>".htmlspecialchars(print_r($arguments, true))."</pre>";
 
         $output .= "<ul class='l$i list'>".PHP_EOL;
         $output .= "<li>".PHP_EOL;
+        
+    
+        
         
 
         
