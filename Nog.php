@@ -52,6 +52,8 @@ class Nog{
     
     public static $index = 0;
     
+    public static $anchors = 0;
+    
     
     /*
      * This is the class constructor.  Though the class is intended to be 
@@ -129,7 +131,7 @@ class Nog{
         
         "button{float: right}".PHP_EOL.
                 
-        ".holder{border: solid 1px black; margin:4px; margin-bottom:10px;}".PHP_EOL.
+        ".holder{border: solid 1px black; margin:4px; margin-bottom:10px; margin-right:0px; min-width:960px}".PHP_EOL.
                 
         "div.selected{border: dashed 10px black; padding:35px; margin:15px}".PHP_EOL.
         
@@ -187,7 +189,7 @@ class Nog{
                 
         "<h3>My Filename: $filename</h3>".PHP_EOL.
          
-        "<div id='anchors'><div>Goto Anchors:</div></div>".PHP_EOL.
+        "<div id='anchors'></div>".PHP_EOL.
         
         "<div id='pulled'></div>");
              
@@ -211,8 +213,7 @@ class Nog{
         //Exit if the class is disabled
         if(!self::$ON){return;}
        
-        //Setup the time tracking array for this function level
-        self::$time_stack[self::$current_level] = 0;
+
         
         //Track the bg color of the current function level
         self::$func_width_by_level[self::$current_level] += 1;
@@ -221,6 +222,9 @@ class Nog{
         self::$current_level += 1;        
         self::$func_width_by_level[self::$current_level] = 0;
         $num_a = self::$current_level % 6;
+        
+        //Setup the time tracking array for this function level
+        self::$time_stack[self::$current_level] = 0;
         
         $css_bg_class = 'bg'.$num_a.$num_b;
         
@@ -339,7 +343,7 @@ class Nog{
         }
 
         $output .= "<div class='time'>".PHP_EOL;
-        $output .= "time+{$elapsed_time}ms={$total_time}ms".PHP_EOL;
+        $output .= "time+{$elapsed_time}&#181;s={$total_time}&#181;s".PHP_EOL;
         $output .= "</div>".PHP_EOL;
         $output .= "</li>".PHP_EOL;
         $output .= "<li>".PHP_EOL;
@@ -378,7 +382,7 @@ class Nog{
         //Build Log file HTML
         $output = "END OF FUNCTION: $name";
         $output .= "<div class='time'>".PHP_EOL;
-        $output .= "time+{$elapsed_time}ms={$total_time}ms".PHP_EOL;
+        $output .= "time+{$elapsed_time}&#181;s={$total_time}&#181;s".PHP_EOL;
         $output .= "</div>".PHP_EOL;
         $output .= "</li></ul></div>".PHP_EOL;
 
@@ -389,8 +393,11 @@ class Nog{
     
     public static function A($name){
         
+        $num = self::$anchors;
         
-        $output = "<a name='$name'></a>".PHP_EOL.
+        $output = 
+                
+        "<a name='anc_$num'></a>".PHP_EOL.
                 
         "<script>".PHP_EOL.
                
@@ -398,15 +405,16 @@ class Nog{
                 
         "document.getElementById('anchors').innerHTML = txt + ".
                 
-            "\"<div><a href='#$name'>$name</a></div>\"".PHP_EOL.
+            "\"<div><a href='#anc_$num'>Anchor $num: $name</a></div>\"".PHP_EOL.
                 
         "</script>".PHP_EOL.
                 
-        "<h2>Ankor: $name</h2></li><li>";
+        "<h3 style='text-align: center;'>====== Anchor $num: $name ======</h3></li><li>";
         
        
         fwrite(self::$file, $output);
 
+        self::$anchors++;
         
     }
     

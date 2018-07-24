@@ -29,6 +29,7 @@ Class myClass{
         $a += 1;
         $b -= 2;
         Nog::M("a increased by 1");
+        Nog::A('function 2');
         Nog::M("b decreased by 2");
         $c = $this->three($a,$b);
         Nog::C();
@@ -45,6 +46,38 @@ Class myClass{
 
 }
 
+function recursive($x){
+    Nog::O();
+    Nog::M("pre sleep");
+    sleep(1);
+    Nog::M("sleep");
+    sleep(1);
+    $x--;
+    Nog::M("x=", $x);
+    if($x%10 == 0){
+       Nog::A("recursive $x"); 
+    }
+    if($x > 0){
+        recursive($x);
+    }
+    Nog::C();
+}
+
+function random_test(){
+    Nog::O();
+    $x = rand(0,100);
+    Nog::M("x=", $x);
+    if($x > 70){
+        random_test();
+    }
+    $x = rand(0,100);
+    Nog::M("x=", $x);
+    if($x > 50){
+        random_test();
+    }
+    Nog::C();
+}
+
 function call_these_classes(){
     Nog::O();
     $x = new myClass();
@@ -55,7 +88,13 @@ function call_these_classes(){
 call_these_classes();
 Nog::A('middle');
 call_these_classes();
+Nog::A('Recursion');
+
+recursive(5);
+Nog::A('Random');
+random_test();
+
 Nog::A('Bottom');
 Nog::C();
-
+Nog::X();
 Echo "Done: ".time();
