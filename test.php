@@ -1,9 +1,9 @@
 <?php 
 require_once("Nog.php");
 
-Nog::init();
+Nog::init("nog","test");
 
-Nog::O();
+Nog::O(6);
 
 Class myClass{
 

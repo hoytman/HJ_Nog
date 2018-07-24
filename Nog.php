@@ -1,9 +1,45 @@
 <?php 
 
+    /*
+     * Nog creates log files for your code executions. It has three static 
+     * function calls that can be added to the start, middle and end of your 
+     * functions. Nog then creates a log file upon execution which maps how 
+     * the functions call each other. Useful during long debugging adventures 
+     * when echo is not enough and debug database tables are not ideal.
+     * 
+     * Step 1: add Nog to your project using: require_once("Nog.php");
+     * Step 2: add "Nog::init($path);" and pass a path for a log folder
+     * Step 2.5: set the correct file permissions for that folder
+     * Step 3: add "Nog::O();" to the beginning of each function.
+     *      Note: "if(class_exists('Nog')){Nog::O();}" is prefered
+     * Step 4: add "Nog::C();" to the end of each function, just before return.
+     *      Note: "if(class_exists('Nog')){Nog::C();}" is prefered
+     * Step 5: add "Nog::M();" anwhere you want to add a debug message
+     *      Note: "if(class_exists('Nog')){Nog::M();}" is prefered
+     *      Note: Nog::M() can accept a variety of data types.
+     * Step 6: (Optional) add "Nog::X();" to the very end of your code
+     *      Note: again, "if(class_exists('Nog')){Nog::X();}" is prefered
+     * Step 7: run your code
+     * 
+     * Every time you run your code, Nog will save an HTML Log file which 
+     * reveal how you code is running
+     * 
+     * note: it's best the wrap each function call in class_exists()
+     * 
+     *      example: if(class_exists('Nog')){Nog::M();}
+     * 
+     * This will allow you to easily deactiveate Nog by not including it.
+     * However, if you are ok with a slower exicution time, you can use the
+     * static::$ON variable to deactivate the class too.
+     * 
+     * Note Nog is short for "Nested Log".
+     * 
+     */
+
+
 class Nog{
     
     public static $ON = true;       //setting this to false shuts off the class
-    public static $path = "nog/";   //the floder to whihc log files are saved
     
     public static $file;            //link to the file whihc is created
   
@@ -16,42 +52,45 @@ class Nog{
     
     public static $index = 0;
     
-    
     /*
      * This is the class constructor.  Though the class is intended to be 
      * referenced as a static class, it can still be instantiated by
      * other classes.
      * 
-     * Also, change self::$path to alter the dir the files
-     * are stored in.  The current dir makes use of 
-     * a Codeigniter constant. 
-     * 
      */
     
-    public function __construct($name = 'nog'){
+    public function __construct($path='nog', $name = 'nog'){
         
         //Exit if the class is disabled
         if(!self::$ON){return;}
         self::init($name);
+        
     }
     
-    public static function init($name = 'nog'){
+    public static function init($path='nog', $name = 'nog'){
         
         //Exit if the class is disabled
         if(!self::$ON){return;}
 
-        if(is_array($name)){
-            $name = $name[0];
+        if(is_array($path)){
+            if(isset($path[1])){
+                $name = $path[1];
+            }
+            $path = $path[0];
+        }
+        
+        if(substr($path, -1, 1) != DIRECTORY_SEPARATOR){
+            $path .= DIRECTORY_SEPARATOR;
         }
         
         //Create the Log file
 
-        if(!file_exists (self::$path)){
-            mkdir(self::$path);
+        if(!file_exists ($path)){
+            mkdir($path);
         }
 
-        $filename = $name .'__'. date('Y_m_d__G_i_s').'.html';
-        self::$file = fopen(self::$path.'/'.$filename, 'a');
+        $filename = $path.$name .'__'. date('Y_m_d__G_i_s').'.html';
+        self::$file = fopen($filename, 'a');
         
         //Add the HTML head for the log file
         
@@ -64,12 +103,22 @@ class Nog{
         "<title>$name - $date</title>".PHP_EOL.
                 
         "<script>".PHP_EOL.
+                
             "function tog(obj, op) {".PHP_EOL.
             "var item = document.getElementsByClassName(obj);".PHP_EOL.
             "for(var i=0; i<item.length; i++){".PHP_EOL.
             "if((item[i].style.display == 'none' && op == 't')|| op == 's')".PHP_EOL.
             "{ item[i].style.display = 'block'; }".PHP_EOL.
             "else { item[i].style.display = 'none';}}}".PHP_EOL.
+                
+            "function sel(obj) {".PHP_EOL.
+            "var item = document.getElementsByClassName(obj);".PHP_EOL.
+            "for(var i=0; i<item.length; i++){".PHP_EOL.
+            "if(item[i].classList.contains('selected'))".PHP_EOL.
+
+            "{ item[i].classList.remove('selected'); }".PHP_EOL.
+            "else { item[i].classList.add('selected');}}}".PHP_EOL.
+                
         "</script>".PHP_EOL.
     
         "<style type='text/css'>".PHP_EOL.
@@ -79,6 +128,8 @@ class Nog{
         "button{float: right}".PHP_EOL.
         
         ".holder{border: solid 1px black; margin:4px; margin-bottom:10px;}".PHP_EOL.
+                
+        "div.selected{border: dashed 10px black; padding:35px; margin:15px}".PHP_EOL.
         
         ".title{margin: 10px; margin-bottom: 0px; padding:2px; background: black; color:white}".PHP_EOL.
 
@@ -128,13 +179,11 @@ class Nog{
                 
         "<body>".PHP_EOL.
                 
-        "<button onclick=\"tog('att', 'h')\">Hide Arguments</button><button onclick=\"tog('att', 's')\">Show Arguments</button><button onclick=\"tog('list', 'h')\">Hide List</button><button onclick=\"tog('list', 's')\">Show List</button>".
+        "<button onclick=\"tog('att', 'h')\">Hide Arguments</button><button onclick=\"tog('att', 's')\">Show Arguments</button><button onclick=\"tog('list', 'h')\">Hide Children</button><button onclick=\"tog('list', 's')\">Show Children</button>".
              
-        "<h1>Elog Report - $name - $date</h1>".PHP_EOL.
+        "<h1>Nog Report - $date</h1>".PHP_EOL.
                 
-        "<h3>Filename: $filename</h3>".PHP_EOL.
-                
-        "<h3>URL: ".$_SERVER['REQUEST_URI']."</h3>".PHP_EOL);
+        "<h3>My Filename: $filename</h3>".PHP_EOL);
              
         //Setup the time tracking array
         
@@ -151,7 +200,7 @@ class Nog{
      * 
      */
     
-    public static function O(){
+    public static function O($line=""){
         
         //Exit if the class is disabled
         if(!self::$ON){return;}
@@ -172,9 +221,10 @@ class Nog{
         //Get function and class information
         $time = debug_backtrace(true);
 
-        $Class = "* ";
-        $function = "...";
-                
+        $Class = "*** ";
+        $function = "---";
+        $file = "line:";
+        
         if(isset($time[1]['class'])){
             $Class = $time[1]['class'] .' '. $time[1]['type'] . ' ';
         }
@@ -183,15 +233,20 @@ class Nog{
             $function = $time[1]['function'].'()';
         }
         
+        if($time[1]['file']){
+            $file = $time[1]['file'].':';
+        }
         
-        $file = $time[1]['file'];
-        $line = $time[1]['line'];
+        if(!$line){
+            $line = $time[1]['line'];
+        }else{
+            $line = $time[1]['line'] .":".$line;
+        }
+        
         $arguments = $time[1]['args'];
-        
-  
-        
+
         $name = "$Class$function";
-        $note = "<div style='float:right'>$file:$line</div>";
+        $note = "<div style='float:right'>$file$line</div>";
     
         //Track function name for function closure
         self::$name_stack[self::$current_level] = $name;
@@ -201,9 +256,13 @@ class Nog{
         
         $output = "";
 
-        $output .= "<div class='holder $css_bg_class'>".PHP_EOL;
+        $output .= "<div class='holder $css_bg_class h$i'>".PHP_EOL;
         
-        $output .= "<button onclick=\"tog('l$i', 't')\">LIST</button><button onclick=\"tog('p$i', 't')\">ARG</button>";
+        $output .= "<button onclick=\"tog('l$i', 't')\">Children</button>";
+                
+        $output .= "<button onclick=\"tog('p$i', 't')\">Arguments</button>";
+        
+        $output .= "<button onclick=\"sel('h$i')\">Highlight</button>";
         
         $output .= "<h3 class='title'> $name$note</h3>".PHP_EOL;
 
@@ -320,6 +379,10 @@ class Nog{
         fwrite(self::$file, $output);
         self::$last_time = (int)(microtime(true)*1000000);
 
+    }
+    
+    public static function X(){
+        fwrite(self::$file, "</body></html>");
     }
 
 }
