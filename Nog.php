@@ -434,7 +434,9 @@ class Nog{
         self::$current_level -= 1;
         
         if(self::$current_level < 0){
+            $output .= "The End</body></html>";
             fwrite(self::$file, $output);
+            self::$ON = false;
             return;
         }
         
@@ -461,6 +463,9 @@ class Nog{
     }
     
     public static function A($name){
+                
+        //Exit if the class is disabled
+        if(!self::$ON){return;}
         
         $num = self::$anchor_count;
         
@@ -488,8 +493,10 @@ class Nog{
     }
     
     public static function X(){
-        self::C();
-        fwrite(self::$file, "The End</body></html>");
+        while(self::$ON){
+            self::C();
+        }
     }
+
 
 }

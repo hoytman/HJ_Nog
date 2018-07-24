@@ -101,6 +101,9 @@ random_test();
 
 Nog::A('Bottom');
 
-Nog::X();
+Nog::C();
 
 Echo "Done: ".time();
+
+Nog::O();
+Nog::C();
