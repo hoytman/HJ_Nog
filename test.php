@@ -1,109 +1,100 @@
 <?php 
+
 require_once("Nog.php");
 
+//This initilizes the function
+
 Nog::init("nog","test");
+
+//This class is created to fhow some nested function calls
 
 Class myClass{
 
     public function __construct() {
         Nog::O();
-        $this->one(10,10);
+        $this->one();
         Nog::C();
     }
     
-    function one($a, $b){
+    function one(){
         Nog::O();
-        $a += 2;
-        $b -= 3;
-        Nog::M("a increased by 2");
-        Nog::M("b decreased by 3");
-        $c = $this->two($a,$b);
+        Nog::M("Lets call two()");
+        $this->two();
+        Nog::M("Lets call three() ", 2, " times");
+        $this->three();
+        $this->three();
         Nog::C();
         return $c;
     }
 
-    function two($a, $b){
+    function two(){
         Nog::O();
-        $a += 1;
-        $b -= 2;
-        Nog::M("a increased by 1");
-        Nog::A('function 2');
-        Nog::M("b decreased by 2");
-        $c = $this->three($a,$b);
+        Nog::M("Lets call three()");
+        $this->three();
         Nog::C();
-        return $c;
     }
 
-    function three($a, $b){
+    function three(){
         Nog::O();
+        $a = rand(1,100);
+        $b = rand(1,100);
         $c = $a + $b;
-        Nog::M("a + b = ", $c);
+        Nog::M($a, '+', $b, '=',$c);
         Nog::C();
-        return $c;
     }
 
 }
 
-function recursive($x){
-    Nog::O();
-    
-    Nog::M("get ready to sleep");
-    
-    $sleep = rand(1,1000);
-    usleep($sleep);
-    Nog::M("sleep:".$sleep);
-    
+// Lets create a few of these classes
 
-    $x--;
-    Nog::M("x=", $x);
-    if($x%10 == 0){
-       Nog::A("recursive $x"); 
-    }
-    if($x > 0){
-        recursive($x);
-    }
-    Nog::C();
-}
-
-function random_test(){
-    Nog::O();
-    $x = rand(0,100);
-    Nog::M("x=", $x);
-    if($x > 50){
-        random_test();
-    }
-    $x = rand(0,100);
-    Nog::M("x=", $x);
-    if($x > 50){
-        random_test();
-    }
-
-    Nog::C();
-}
-
-function call_these_classes(){
+function create_some_classes(){
     Nog::O();
     $x = new myClass();
+    Nog::A('Create a second Class');
     $y = new myClass();
     Nog::C();
 }
 
-call_these_classes();
-Nog::A('middle');
-call_these_classes();
-Nog::A('Recursion');
+//Here are a few more classes to make things interesting
 
-recursive(100);
+function rest(){
+    Nog::O();
+    Nog::M("Getting ready to sleep");
+    $sleep = rand(1,50);
+    usleep($sleep);
+    Nog::M("sleep:".$sleep);
+    Nog::C();
+}
 
-Nog::A('Random');
+function recursive($x){
+    Nog::O();
+    rest();
+    $x--;
+   
+    for($i = 0; $i<$x; $i++ ){
+   
+        Nog::M($i, ' out of ', $i);
+        recursive($x);
+    }
 
-random_test();
+    Nog::C();
+}
 
-Nog::A('Bottom');
+//Lets run some code:
 
-Nog::C();
+create_some_classes();
+
+Nog::A('recursive');
+
+recursive(4);
+
+Nog::A('the end');
+
+Nog::X();
 
 Echo "Done: ".time();
+
+//These calls will be ignored.
 
 Nog::O();
 Nog::C();
