@@ -8,17 +8,13 @@
      * when echo is not enough and debug database tables are not ideal.
      * 
      * Step 1: add Nog to your project using: require_once("Nog.php");
-     * Step 2: add "Nog::init($path);" and pass a path for a log folder
+     * Step 2: add "Nog::init($path, $nane);" and pass a path for a log folder
      * Step 2.5: set the correct file permissions for that folder
      * Step 3: add "Nog::O();" to the beginning of each function.
-     *      Note: "if(class_exists('Nog')){Nog::O();}" is prefered
      * Step 4: add "Nog::C();" to the end of each function, just before return.
-     *      Note: "if(class_exists('Nog')){Nog::C();}" is prefered
      * Step 5: add "Nog::M();" anwhere you want to add a debug message
-     *      Note: "if(class_exists('Nog')){Nog::M();}" is prefered
      *      Note: Nog::M() can accept a variety of data types.
      * Step 6: (Optional) add "Nog::X();" to the very end of your code
-     *      Note: again, "if(class_exists('Nog')){Nog::X();}" is prefered
      * Step 7: run your code
      * 
      * Every time you run your code, Nog will save an HTML Log file which 
@@ -61,7 +57,7 @@ class Nog{
      * 
      */
     
-    public function __construct($path='nog', $name = 'nog'){
+    public function __construct($path='nog', $name = 'nog', $on = true){
         
         //Exit if the class is disabled
         if(!self::$ON){return;}
@@ -69,12 +65,14 @@ class Nog{
         
     }
     
-    public static function init($path='nog', $name = 'nog'){
+    public static function init($path='nog', $name = 'nog', $on = true){
         
        
         
         //Exit if the class is disabled
         if(!self::$ON){return;}
+        
+        self::$ON = $on;
 
         if(is_array($path)){
             if(isset($path[1])){
@@ -229,7 +227,7 @@ class Nog{
      * 
      */
     
-    public static function O($line=""){
+    public static function O($css=""){
         
         //Exit if the class is disabled
         if(!self::$ON){return;}
@@ -276,12 +274,9 @@ class Nog{
             $file = $time[1]['file'].':';
         }
         
-        if(!$line){
-            $line = $time[1]['line'];
-        }else{
-            $line = $time[1]['line'] .":".$line;
-        }
         
+        $line = $time[1]['line'];
+       
         $arguments = $time[1]['args'];
 
         $name = "$Class$function";
@@ -303,7 +298,7 @@ class Nog{
         
         $output = "";
 
-        $output .= "<div class='holder $css_bg_class h$i level$level'>".PHP_EOL;
+        $output .= "<div style='$css' class='holder $css_bg_class h$i level$level'>".PHP_EOL;
                 $output .= "<button onclick=\"tog('l$i', 't')\">Minimize</button>";
                 
         $output .= "<button onclick=\"tog('p$i', 't')\">Arguments</button>";

@@ -58,7 +58,7 @@ function create_some_classes(){
 //Here are a few more classes to make things interesting
 
 function rest(){
-    Nog::O();
+    Nog::O('background:green; color:red');
     Nog::M("Getting ready to sleep");
     $sleep = rand(1,50);
     usleep($sleep);
@@ -69,12 +69,11 @@ function rest(){
 function recursive($x){
     Nog::O();
     rest();
-    $x--;
    
     for($i = 0; $i<$x; $i++ ){
    
         Nog::M($i, ' out of ', $i);
-        recursive($x);
+        recursive($x-1);
     }
 
     Nog::C();
@@ -85,6 +84,8 @@ function recursive($x){
 create_some_classes();
 
 Nog::A('recursive');
+
+Nog::$ON = true;
 
 recursive(4);
 
