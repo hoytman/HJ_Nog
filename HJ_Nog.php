@@ -1,28 +1,57 @@
 <?php 
 
+/**
+ *
+ * This content is released under the MIT License (MIT)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * @package         HJ_Nog
+ * @author          Hoyt Jolly
+ * @license         https://opensource.org/licenses/MIT	
+ * @link	
+ * @filesource
+ */
+
     /*
-     * Nog creates log files for your code executions. It has three static 
+     * HJ_Nog creates log files for your code executions. It has three static 
      * function calls that can be added to the start, middle and end of your 
      * functions. Nog then creates a log file upon execution which maps how 
      * the functions call each other. Useful during long debugging adventures 
      * when echo is not enough and debug database tables are not ideal.
      * 
-     * Step 1: add Nog to your project using: require_once("Nog.php");
-     * Step 2: add "Nog::init($path, $nane);" and pass a path for a log folder
+     * Step 1: add HJ_Nog to your project using: require_once("HJ_Nog.php");
+     * Step 2: add "HJ_Nog::init($path, $nane);" and pass a path for a log folder
      * Step 2.5: set the correct file permissions for that folder
-     * Step 3: add "Nog::O();" to the beginning of each function.
-     * Step 4: add "Nog::C();" to the end of each function, just before return.
-     * Step 5: add "Nog::M();" anwhere you want to add a debug message
-     *      Note: Nog::M() can accept a variety of data types.
-     * Step 6: (Optional) add "Nog::X();" to the very end of your code
+     * Step 3: add "HJ_Nog::O();" to the beginning of each function.
+     * Step 4: add "HJ_Nog::C();" to the end of each function, just before return.
+     * Step 5: add "HJ_Nog::M();" anwhere you want to add a debug message
+     *      Note: HJ_Nog::M() can accept a variety of data types.
+     * Step 6: (Optional) add "HJ_Nog::X();" to the very end of your code
      * Step 7: run your code
      * 
-     * Every time you run your code, Nog will save an HTML Log file which 
+     * Every time you run your code, HJ_Nog will save an HTML Log file which 
      * reveal how you code is running
      * 
      * note: it's best the wrap each function call in class_exists()
      * 
-     *      example: if(class_exists('Nog')){Nog::M();}
+     *      example: if(class_exists('HJ_Nog')){HJ_Nog::M();}
      * 
      * This will allow you to easily deactiveate Nog by not including it.
      * However, if you are ok with a slower exicution time, you can use the
@@ -33,30 +62,93 @@
      */
 
 
-class Nog{
+class HJ_Nog{
     
-    public static $ON = true;       //setting this to false shuts off the class
+    /**
+    * Setting this to false will disable the class so it does nothing
+    *
+    * @var	string
+    */
+    public static $ON = true;       
     
-    public static $file;            //link to the file whihc is created
-
+    /**
+    * An internal link to the file that stores the log
+    *
+    * @var	string
+    */
+    public static $file;            
+    
+    /**
+    * As log traverses nested functions, this is the current function call depth
+    *
+    * @var	string
+    */
     public static $current_level = -1;
+    
+    /**
+    * counts the number of report blocks.  Used for Javascript functions.
+    *
+    * @var	string
+    */
     public static $block_count = 0;
+    
+    /**
+    * counts the number of times A() has been called.  Used to create anchor
+    * tags that point to the correct place in the log file. 
+    *
+    * @var	string
+    */
     public static $anchor_count = 0;
     
+    /**
+    * counts the function calls per level.  Used to alternate the color 
+    * brightness for report blocks.
+    *
+    * @var	string
+    */
     public static $alternate_color = array(0 => 0);
+    
+    /**
+    * Tracks the amount of time spent on each function.
+    *
+    * @var	string
+    */
     public static $time_stack = array();
+    
+    /**
+    * Tracks the function names.
+    *
+    * @var	string
+    */
     public static $name_stack = array();
+    
+    /**
+    * Tracks the number of times that a function has been called.
+    *
+    * @var	string
+    */
     public static $function_list = array();
     
+    
+    /**
+    * the last recorded time.  Used to track all 'elapsed time' values
+    *
+    * @var	string
+    */
     public static $last_time = 0;
     
-    /*
-     * This is the class constructor.  Though the class is intended to be 
-     * referenced as a static class, it can still be instantiated by
-     * other classes.
-     * 
-     */
     
+    /**
+    * Class Constructor
+    *
+    * Although this is a static class, it has a constructor just incase
+    * it is called by a framework or helper. 
+    *  
+    *
+    * @param	int	$server_key     identifier for the server
+    *
+    * @return	none
+    */
     public function __construct($path='nog', $name = 'nog', $on = true){
         
         //Exit if the class is disabled
@@ -65,10 +157,20 @@ class Nog{
         
     }
     
+    /**
+    * init()
+    *
+    * Sets up the initial values, like a constructor would
+    *  
+    *
+    * @param	String	$path   the path to the save file folder
+    * @param    String  $name   the name prefix to be used for files
+    * @param    boolean $on     activates or deactivates the class
+    *
+    * @return	none
+    */
     public static function init($path='nog', $name = 'nog', $on = true){
-        
-       
-        
+
         //Exit if the class is disabled
         if(!self::$ON){return;}
         
@@ -92,7 +194,7 @@ class Nog{
         }
 
         $filename = $path.$name .'__'. date('Y_m_d__G_i_s').'.html';
-        self::$file = fopen($filename, 'a');
+        self::$file = fopen($filename, 'w');
         
         //Add the HTML head for the log file
         
@@ -219,14 +321,18 @@ class Nog{
         
     }
     
-    /*
-     * Call this function at the start of a function you want to log
-     * the syntex should be:
+    /**
+     * O()
      * 
-     * if(class_exists('Nog')){Nog::O();}
+     * Call this function at the start of each function that you want to log
+     * recommended syntax:
      * 
+     * if(class_exists('HJ_Nog')){HJ_Nog::O();}
+     * 
+     * @param   String  $css    override css rules for this report block
+     * 
+     * @return  void
      */
-    
     public static function O($css=""){
         
         //Exit if the class is disabled
@@ -327,20 +433,24 @@ class Nog{
 
     }
     
-    /*
-     * Call this function to log a message
-     * the syntex should be:
+    /**
+     * M()
      * 
-     * if(class_exists('Nog')){Nog::M('...');}
+     * Adds a message to the current report block.  Used for adding debug data.
+     * This function can accept several different types of parameters:
+     * strings and number will simply be added.
+     * Booleans will be converted to TRUE or FALSE
+     * Arrays and objects will be displayed using print_r();
+     * multiple parameters will be displayed, separated by spaces. 
      * 
-     * the function can take a String, int, float, boolean, array, object
-     * Multiple paramaters can be passed
+     * recommended syntax:
      * 
-     * Also, if a string endign with ':' is passed
-     * then the string will be used as a label
+     * if(class_exists('HJ_Nog')){HJ_Nog::M();}
      * 
+     * @param   ---     ---       multiple parameters of different types 
+     * 
+     * @return  void
      */
-    
     public static function M(){
         
         //Exit if the class is disabled
@@ -392,15 +502,17 @@ class Nog{
         self::$last_time = (int)(microtime(true)*1000000);
     }
     
-    
-    /*
-     * Call this function at the end of a function you want to log
-     * the syntex should be:
+    /**
+     * C()
+     * 
+     * Call this function at the end of each function you log
+     * 
+     * recommended syntax:
      * 
      * if(class_exists('Nog')){Nog::C();}
      * 
+     * @return  void
      */
-    
     public static function C(){
         
         //Exit if the class is disabled
@@ -413,9 +525,7 @@ class Nog{
         
         $total_time = self::$time_stack[self::$current_level];
         $name = self::$name_stack[self::$current_level];
-        
 
-        
         //Build Log file HTML
         $output = "END OF FUNCTION: $name";
         
@@ -431,12 +541,10 @@ class Nog{
         if(self::$current_level < 0){
             $output .= "The End</body></html>";
             fwrite(self::$file, $output);
+            fclose(self::$file);
             self::$ON = false;
             return;
         }
-        
-        
-
         
         //Add elapsed time to the total time of the previous function
         self::$time_stack[self::$current_level] += $total_time;
@@ -457,6 +565,21 @@ class Nog{
 
     }
     
+    
+    /**
+     * A()
+     * 
+     * Call this function at add an anchor tag to your log file.
+     * Makes it easer to find specific occurrences within the file.
+     * 
+     * recommended syntax:
+     * 
+     * if(class_exists('Nog')){Nog::A();}
+     * 
+     * @param   String  $name   The name used for the anchor tag
+     * 
+     * @return  void
+     */
     public static function A($name){
                 
         //Exit if the class is disabled
@@ -487,6 +610,20 @@ class Nog{
         
     }
     
+    /**
+     * X()
+     * 
+     * Used to immediately close all report blocks and terminate 
+     * the log file at any point.  This can be used in combination with 
+     * Nog::ON = true; to create a shortened file that only focuses on 
+     * a specific part of your code.
+     * 
+     * recommended syntax:
+     * 
+     * if(class_exists('Nog')){Nog::X();}
+     * 
+     * @return  void
+     */
     public static function X(){
         while(self::$ON){
             self::C();
